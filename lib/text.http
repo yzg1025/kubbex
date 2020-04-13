@@ -1,0 +1,7 @@
+POST https://api.kibiex.com/api/Login/getCountryPhoneCode
+Content-Type: text/html; charset=utf-8
+X-Cache: bypass
+
+{
+  "is_debug": "true",
+}
