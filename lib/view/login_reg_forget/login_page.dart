@@ -1,14 +1,11 @@
-import 'dart:io';
-
-import 'package:Kkubex/model/area_code.dart';
-import 'package:Kkubex/model/notic.dart';
+import 'package:Kkubex/model/login.dart';
+import 'package:Kkubex/tools/validator.dart';
 import 'package:Kkubex/util/navigator_util.dart';
 import 'package:Kkubex/util/network_utils.dart';
-import 'package:Kkubex/widget/future_builder.dart';
+import 'package:Kkubex/view/login_reg_forget/select_code.dart';
 import 'package:Kkubex/widget/textstyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key key}) : super(key: key);
@@ -73,14 +70,19 @@ class FromPage extends StatefulWidget {
 class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin {
   TabController controller;
 
-  final String areacode = '+86';
+  final TextEditingController _phoneController = TextEditingController(); // phone的控制器 
+  final TextEditingController _emailController = TextEditingController(); // email的控制器
+  final TextEditingController _passwordController = TextEditingController(); // email的控制器
+  final TextEditingController _codeController = TextEditingController(); // email的控制器
+
+  String areacode = '86';
   String codeType = '请输入手机验证码';
+  RegExp exp = RegExp(r'^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\d{8}$');
   bool index = false;
   bool obscureText = true;
   bool cashPass = false;
 
   var tabs = <Tab>[];
-
 
   @override
   void initState() {
@@ -95,13 +97,18 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
       controller.index == 0 ? codeType = "请输入手机验证码" : codeType ='请输入邮箱验证码';
       setState(() {});
     });
-     _getcode();
-  }
 
-  _getcode(){
-    UserAPI.getCountries(context: context).then((val){
-      print(val.data);
+    _emailController.addListener((){
+      if (!duIsEmail(_emailController.value.text)) {
+        return Utils.showToast('邮箱格式不正确');
+      }
     });
+
+    // _codeController.addListener((){
+    //   if (!isValidateCaptcha(_codeController.value.text)) {
+    //     return Utils.showToast('验证码格式不正确');
+    //   }
+    // });
   }
   
   changePassType(){
@@ -115,10 +122,29 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
     setState(() {});
   }
 
+  _login() async{
+    Login params = Login(
+      phone:areacode + _phoneController.value.text,
+      email: _emailController.value.text,
+      code: _codeController.value.text,
+      password: _passwordController.value.text,
+    );
+
+    LoginResponse userProfile = await UserAPI.login(
+      context: context,
+      params: params,
+    );
+    print(userProfile.accessToken);
+  }
+
   @override
   void dispose() {
     super.dispose();
     controller.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _codeController.dispose();
   }
 
   @override
@@ -153,6 +179,7 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
           Container(
             decoration: bottomBorder,
             child: TextField(
+              controller: _passwordController,
               decoration: InputDecoration(
                 border:InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 25.0),
@@ -174,6 +201,7 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
           Container(
             decoration: bottomBorder,
             child:TextField(
+              controller: _codeController,
               decoration: InputDecoration(
                 border:InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 25.0),
@@ -228,6 +256,7 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
             ),
             child:GestureDetector(
               onTap:(){
+                _login();
                 NavigatorUtil.goIndexPage(context);
               },
               child:Text('登录',style:TextStyle(fontSize:20,color:Colors.white)),
@@ -250,26 +279,14 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
       decoration: bottomBorder,
       padding: EdgeInsets.only(top:10),
       child: TextField(
+        controller: _phoneController,
         decoration: InputDecoration(
           hintText: "请输入手机号",
           prefixIcon: Container(
             width: 60,
             child:InkWell(
               onTap: (){
-                // showDialog<Null>(
-                //   context: context,
-                //   barrierDismissible: false,
-                //   builder: (BuildContext context) {
-                //     return new CupertinoAlertDialog(
-                //       title: new Text('标题'),
-                //       content: new SingleChildScrollView(
-                       
-                //       )
-                //     );
-                //   },
-                // ).then((val) {
-                //     print(val);
-                // });
+                _navigateCode(context);
               },
               child:Row(
                 children:<Widget>[
@@ -290,6 +307,7 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
       padding: EdgeInsets.only(top:10),
       decoration: bottomBorder,
       child: TextField(
+        controller: _emailController,
         decoration: InputDecoration(
           border:InputBorder.none,
           hintText: "请输入邮箱账号",
@@ -297,5 +315,10 @@ class _FromPageState extends State<FromPage> with SingleTickerProviderStateMixin
         ),
       ),
     );
+  }
+
+   _navigateCode(BuildContext context) async{ //async是启用异步方法
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context)=> SelectCode()));
+    setState(() {areacode =result.toString();});
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:Kkubex/model/area_code.dart';
+import 'package:Kkubex/model/login.dart';
 import 'package:Kkubex/model/notic.dart';
 import 'package:Kkubex/util/navigator_util.dart';
 import 'package:Kkubex/util/url.dart';
@@ -195,7 +196,7 @@ class HttpUtil {
   Future post(
     String path, {
     @required BuildContext context,
-    Map<String, dynamic> params,
+    dynamic params,
     Options options,
   }) async {
     Options requestOptions = options ?? Options();
@@ -226,19 +227,24 @@ class ErrorEntity implements Exception {
 }
 
 class UserAPI {
-
+  //区号
   static Future<AreaCode> getCountries({BuildContext context}) async {
     var params = {'is_debug':'true'};
     Map<String, dynamic>.from(params);
     var response = await HttpUtil().post('/api/Login/getCountryPhoneCode',context: context,params:params);
-    print(response);
-    return AreaCode.fromJson(response.data);
+    return AreaCode.fromJson(response);
   }
   /// 公告
   static Future<Notice> getNotice({BuildContext context}) async {
     var params = {'is_debug':'true'};
     Map<String, dynamic>.from(params);
     var response = await HttpUtil().post('/api/Announces/getAnnounceList',context: context, params: params);
-    return Notice.fromJson(response.data);
+    return Notice.fromJson(response);
+  }
+
+  ///登录
+  static Future<LoginResponse> login({BuildContext context,Login params}) async {
+    var response = await HttpUtil().post('/api/Login/login',context: context, params: params);
+    return LoginResponse.fromJson(response);
   }
 }

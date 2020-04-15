@@ -19,11 +19,15 @@ class NavigatorUtil{
   
   ///登录页面
   static void goLoginPage(BuildContext context){
-    _navigateTo(context, Routes.login,clearStack: true);
+    _navigateTo(context, Routes.login,clearStack: false);
   }
 
+  ///选择区号
+  static void goSelectCode(BuildContext context){
+    _navigateTo(context, Routes.selectcode,clearStack: false);
+  }
   ///首页页面
   static void goIndexPage(BuildContext context){
-    _navigateTo(context, Routes.home,clearStack: true);
+    _navigateTo(context, Routes.home,clearStack: false);
   }
 }
