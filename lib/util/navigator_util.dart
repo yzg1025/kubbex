@@ -26,8 +26,19 @@ class NavigatorUtil{
   static void goSelectCode(BuildContext context){
     _navigateTo(context, Routes.selectcode,clearStack: false);
   }
+  
+  //注册页面
+  static void goRegisterPage(BuildContext context){
+    _navigateTo(context, Routes.register,clearStack: false);
+  }
+
   ///首页页面
   static void goIndexPage(BuildContext context){
     _navigateTo(context, Routes.home,clearStack: false);
+  }
+
+  ///首页页面
+  static void goForget(BuildContext context){
+    _navigateTo(context, Routes.forget,clearStack: false);
   }
 }

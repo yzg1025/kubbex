@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,7 +25,12 @@ class StorageUtil {
     await _storage.setItem(key, val);
   }
 
-   static Future<void> init() async {
+  Future<bool> setJSON(String key, dynamic jsonVal) {
+    String jsonString = jsonEncode(jsonVal);
+    return _prefs.setString(key, jsonString);
+  }
+
+  static Future<void> init() async {
     if (_prefs == null) {
       _prefs = await SharedPreferences.getInstance();
     }

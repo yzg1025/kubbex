@@ -1,11 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:Kkubex/global.dart';
 import 'package:Kkubex/model/area_code.dart';
 import 'package:Kkubex/model/login.dart';
 import 'package:Kkubex/model/notic.dart';
+import 'package:Kkubex/model/registermodel.dart';
 import 'package:Kkubex/util/navigator_util.dart';
+import 'package:Kkubex/util/proxy.dart';
 import 'package:Kkubex/util/url.dart';
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +18,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class Utils {
   static void showToast(String msg) {
-    Fluttertoast.showToast(msg: msg, gravity: ToastGravity.CENTER,backgroundColor: Colors.red);
+    Fluttertoast.showToast(msg: msg, gravity: ToastGravity.CENTER,backgroundColor: Colors.grey);
   }
 }
 
@@ -69,18 +74,18 @@ class HttpUtil {
     // 加内存缓存
     //dio.interceptors.add(NetCache());
 
-    // 在调试模式下需要抓包调试，所以我们使用代理，并禁用HTTPS证书校验
-    // if (!Global.isRelease && PROXY_ENABLE) {
-    //   (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
-    //       (client) {
-    //     client.findProxy = (uri) {
-    //       return "PROXY $PROXY_IP:$PROXY_PORT";
-    //     };
-    //     //代理工具会提供一个抓包的自签名证书，会通不过证书校验，所以我们禁用证书校验
-    //     client.badCertificateCallback =
-    //         (X509Certificate cert, String host, int port) => true;
-    //   };
-    // }
+    //在调试模式下需要抓包调试，所以我们使用代理，并禁用HTTPS证书校验
+    if (!Global.isRelease && PROXY_ENABLE) {
+      (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+          (client) {
+        client.findProxy = (uri) {
+          return "PROXY $PROXY_IP:$PROXY_PORT";
+        };
+        //代理工具会提供一个抓包的自签名证书，会通不过证书校验，所以我们禁用证书校验
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+      };
+    }
   }
 
   /*
@@ -207,8 +212,7 @@ class HttpUtil {
     // if (_authorization != null) {
     //   requestOptions = requestOptions.merge(headers: _authorization);
     // }
-    var response = await dio.post(path,
-        data: params, options: requestOptions, cancelToken: cancelToken);
+    var response = await dio.post(path, data: params, options: requestOptions, cancelToken: cancelToken);
     return jsonDecode(response.data);
   }
 
@@ -246,5 +250,23 @@ class UserAPI {
   static Future<LoginResponse> login({BuildContext context,Login params}) async {
     var response = await HttpUtil().post('/api/Login/login',context: context, params: params);
     return LoginResponse.fromJson(response);
+  }
+
+  ///获取验证码
+  static Future<GetCodeResponse> getCode({BuildContext context,GetCodeRequire params}) async {
+    var response = await HttpUtil().post('/api/Login/send_verification_code',context: context, params: params);
+    return GetCodeResponse.fromJson(response);
+  }
+
+  //注册
+  static Future<GetCodeResponse> getRegister({BuildContext context,RegisterRequire params}) async {
+    var response = await HttpUtil().post('/api/Login/register',context: context, params: params);
+    return GetCodeResponse.fromJson(response);
+  }
+
+  //忘记密码
+  static Future<GetCodeResponse> getForgetPass({BuildContext context,Login params}) async {
+    var response = await HttpUtil().post('/api/Login/forget',context: context, params: params);
+    return GetCodeResponse.fromJson(response);
   }
 }
